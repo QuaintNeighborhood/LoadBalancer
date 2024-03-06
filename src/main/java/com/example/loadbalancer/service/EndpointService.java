@@ -19,11 +19,16 @@ public class EndpointService {
     }
 
     public String getNextEndpoint() {
-        final int curIndex = index.getAndIncrement();
-        final String endpoint = endpoints.get(curIndex);
         final int size = endpoints.size();
-        LOG.info(String.format("Endpoint index: %d/%d, endpoint: %s", curIndex + 1, size, endpoint));
-        index.compareAndSet(size, 0);
+        int index = getNextIndex();
+        final String endpoint = endpoints.get(index);
+        LOG.fine("Endpoint index: %d/%d, endpoint: %s".formatted(index + 1, size, endpoint));
         return endpoint;
+    }
+
+    private int getNextIndex() {
+        final int curIndex = index.getAndIncrement();
+        index.compareAndSet(endpoints.size(), 0);
+        return curIndex;
     }
 }

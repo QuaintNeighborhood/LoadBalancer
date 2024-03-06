@@ -18,6 +18,10 @@ public class EndpointService {
         this.endpoints = endpoints;
     }
 
+    public int getNumEndpoints() {
+        return endpoints.size();
+    }
+
     public String getNextEndpoint() {
         final int size = endpoints.size();
         int index = getNextIndex();

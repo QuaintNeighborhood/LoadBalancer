@@ -12,6 +12,17 @@ class EndpointServiceTest {
     private EndpointService svc;
 
     @Test
+    void getNumEndpoints() {
+        final List<String> endpoints1 = List.of("endpoint1");
+        svc = new EndpointService(endpoints1);
+        assertEquals(1, svc.getNumEndpoints());
+
+        final List<String> endpoints2 = Arrays.asList("endpoint1", "endpoint2");
+        svc = new EndpointService(endpoints2);
+        assertEquals(2, svc.getNumEndpoints());
+    }
+
+    @Test
     void getNextEndpoint() {
         final List<String> endpoints = Arrays.asList("endpoint1", "endpoint2", "endpoint3");
         svc = new EndpointService(endpoints);

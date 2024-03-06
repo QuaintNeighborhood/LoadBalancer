@@ -1,10 +1,10 @@
 package com.example.loadbalancer.service;
 
+import com.example.loadbalancer.exception.NoServersAvailableException;
 import mockwebserver3.MockResponse;
 import mockwebserver3.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,15 +41,12 @@ class LoadBalancerServiceTest {
         mockBackEnd.shutdown();
     }
 
-    @BeforeEach
-    void initialize() {
+    @Test
+    void processRequest_AllServersHealthy() {
+        when(endpointService.getNumEndpoints()).thenReturn(1);
         final String mockEndpoint = String.format("http://localhost:%s", mockBackEnd.getPort());
         when(endpointService.getNextEndpoint()).thenReturn(mockEndpoint);
-    }
 
-    @Test
-    void processRequest_Success() {
-        // Mocking request body
         final Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("key", "value");
 
@@ -58,25 +56,50 @@ class LoadBalancerServiceTest {
                 .build()
         );
 
-        // Call the method under test
         final Map<String, Object> response = lbSvc.processRequest(requestBody);
-
-        // Verify the behavior
         assertEquals(requestBody, response);
     }
 
     @Test
-    void processRequest_Failure() {
-        // Mocking request body
-        final Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("key", "value");
+    void testProcessRequest_AllServersFail() {
+        when(endpointService.getNumEndpoints()).thenReturn(2);
+        final String mockEndpoint = String.format("http://localhost:%s", mockBackEnd.getPort());
+        when(endpointService.getNextEndpoint()).thenReturn(mockEndpoint);
+        when(endpointService.getNextEndpoint()).thenReturn(mockEndpoint);
 
         mockBackEnd.enqueue(new MockResponse().newBuilder()
                 .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .build()
+        );
+        mockBackEnd.enqueue(new MockResponse().newBuilder()
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .build()
+        );
+
+        assertThrows(NoServersAvailableException.class, () -> lbSvc.processRequest(Collections.emptyMap()));
+    }
+
+    @Test
+    void testProcessRequest_OneServerFail() {
+        when(endpointService.getNumEndpoints()).thenReturn(2);
+        final String mockEndpoint = String.format("http://localhost:%s", mockBackEnd.getPort());
+        when(endpointService.getNextEndpoint()).thenReturn(mockEndpoint);
+        when(endpointService.getNextEndpoint()).thenReturn(mockEndpoint);
+
+        mockBackEnd.enqueue(new MockResponse().newBuilder()
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .build()
+        );
+
+        final Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("key", "value");
+        mockBackEnd.enqueue(new MockResponse().newBuilder()
+                .body("{\"key\": \"value\"}")
                 .addHeader("Content-Type", "application/json")
                 .build()
         );
 
-        assertThrows(Exception.class, () -> lbSvc.processRequest(requestBody));
+        final Map<String, Object> response = lbSvc.processRequest(requestBody);
+        assertEquals(requestBody, response);
     }
 }

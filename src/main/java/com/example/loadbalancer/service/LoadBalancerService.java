@@ -20,6 +20,12 @@ public class LoadBalancerService {
     @Autowired
     private EndpointService endpointSvc;
 
+    private final WebClient webClient;
+
+    public LoadBalancerService(final WebClient webClient) {
+        this.webClient = webClient;
+    }
+
     public Map<String, Object> processRequest(final Map<String, Object> requestBody) {
         for (int numFailedServers = 0; numFailedServers < endpointSvc.getNumEndpoints(); numFailedServers++) {
             final String endpoint = endpointSvc.getNextEndpoint();
@@ -43,9 +49,7 @@ public class LoadBalancerService {
 
     private Map<String, Object> processRequest(final String endpoint, final Map<String, Object> requestBody) {
         LOG.info("Server:%s processing request with body %s".formatted(endpoint, requestBody));
-        return WebClient.builder()
-                .build()
-                .post()
+        return webClient.post()
                 .uri(endpoint)
                 .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(requestBody)

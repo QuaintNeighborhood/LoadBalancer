@@ -11,11 +11,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -27,8 +29,9 @@ class LoadBalancerServiceTest {
     private static MockWebServer mockBackEnd;
     @Mock
     private EndpointService endpointService;
+
     @InjectMocks
-    private LoadBalancerService lbSvc;
+    private LoadBalancerService lbSvc = new LoadBalancerService(WebClient.builder().build());
 
     @BeforeAll
     static void setUp() throws IOException {
@@ -93,6 +96,32 @@ class LoadBalancerServiceTest {
 
         final Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("key", "value");
+        mockBackEnd.enqueue(new MockResponse().newBuilder()
+                .body("{\"key\": \"value\"}")
+                .addHeader("Content-Type", "application/json")
+                .build()
+        );
+
+        final Map<String, Object> response = lbSvc.processRequest(requestBody);
+        assertEquals(requestBody, response);
+    }
+
+    @Test
+    void testProcessRequest_OneServerIsSlow() {
+        when(endpointService.getNumEndpoints()).thenReturn(2);
+        final String mockEndpoint = String.format("http://localhost:%s", mockBackEnd.getPort());
+        when(endpointService.getNextEndpoint()).thenReturn(mockEndpoint);
+        when(endpointService.getNextEndpoint()).thenReturn(mockEndpoint);
+
+        final Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("key", "value");
+        mockBackEnd.enqueue(new MockResponse().newBuilder()
+                .addHeader("Content-Type", "application/json")
+                .headersDelay(2, TimeUnit.SECONDS)
+                .bodyDelay(2, TimeUnit.SECONDS)
+                .body("{\"key\": \"value\"}")
+                .build()
+        );
         mockBackEnd.enqueue(new MockResponse().newBuilder()
                 .body("{\"key\": \"value\"}")
                 .addHeader("Content-Type", "application/json")

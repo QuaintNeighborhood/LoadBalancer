@@ -19,13 +19,23 @@ class EchoAPIApplicationTests {
 	private static final String PATH = "/api/echo";
 
 	@Test
-	public void testEchoEndpoint() throws Exception {
+	public void testEchoEndpoint_Success() throws Exception {
 		final String requestBody = "{\"key\": \"value\"}";
 
 		mockMvc.perform(MockMvcRequestBuilders.post(PATH)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().json(requestBody));
+	}
+
+	@Test
+	public void testEchoEndpoint_BadRequest() throws Exception {
+		final String requestBody = "{\"key\": }";
+
+		mockMvc.perform(MockMvcRequestBuilders.post(PATH)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(requestBody))
+				.andExpect(MockMvcResultMatchers.status().isBadRequest());
 	}
 }

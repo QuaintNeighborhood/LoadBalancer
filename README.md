@@ -23,4 +23,6 @@ all backend servers are down.
 
 Timeouts are configured in the HttpClient. If a request to one
 server timeouts, the load balancer will route the request to another
-server until it is able to get a valid response.
+server until it is able to get a valid response. If all servers are slow,
+a response with an HTTP status code of 500 will be returned with an error
+message indicating that all backend servers are down.

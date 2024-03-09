@@ -1,6 +1,5 @@
 package com.example.loadbalancer.service;
 
-import com.example.loadbalancer.exception.NoServersAvailableException;
 import mockwebserver3.MockResponse;
 import mockwebserver3.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
@@ -15,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.netty.http.client.HttpClient;
 
 import java.io.IOException;
@@ -92,7 +92,7 @@ class LoadBalancerServiceTest {
         mockBackEnd1.enqueue(ERR_RES);
         mockBackEnd2.enqueue(ERR_RES);
 
-        assertThrows(NoServersAvailableException.class, () -> lbSvc.processRequest(REQ_BODY));
+        assertThrows(ResponseStatusException.class, () -> lbSvc.processRequest(REQ_BODY));
         assertEquals(1, mockBackEnd1.getRequestCount());
         assertEquals(1, mockBackEnd2.getRequestCount());
     }

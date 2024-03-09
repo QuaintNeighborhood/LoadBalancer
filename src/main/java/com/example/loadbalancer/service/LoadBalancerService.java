@@ -1,13 +1,14 @@
 package com.example.loadbalancer.service;
 
-import com.example.loadbalancer.exception.NoServersAvailableException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 import java.util.logging.Level;
@@ -44,7 +45,7 @@ public class LoadBalancerService {
                 throw e;
             }
         }
-        throw new NoServersAvailableException("All servers failed to respond");
+        throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "All servers failed to respond");
     }
 
     private Map<String, Object> processRequest(final String endpoint, final Map<String, Object> requestBody) {

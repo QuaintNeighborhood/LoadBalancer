@@ -38,4 +38,18 @@ class EchoAPIApplicationTests {
 						.content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest());
 	}
+
+	@Test
+	public void testEchoEndpoint_UnsupportedMediaType() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.post(PATH))
+				.andExpect(MockMvcResultMatchers.status().isUnsupportedMediaType());
+
+		mockMvc.perform(MockMvcRequestBuilders.post(PATH)
+						.contentType(MediaType.APPLICATION_XML))
+				.andExpect(MockMvcResultMatchers.status().isUnsupportedMediaType());
+
+		mockMvc.perform(MockMvcRequestBuilders.post(PATH)
+						.content(""))
+				.andExpect(MockMvcResultMatchers.status().isUnsupportedMediaType());
+	}
 }

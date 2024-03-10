@@ -22,11 +22,11 @@ public class LoadBalancerController {
     private LoadBalancerService svc;
 
     @PostMapping(
-            value = "/roundrobin",
+            value = "/loadbalancer",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public Map<String, Object> roundRobinEndpoint(@RequestBody Map<String, Object> requestBody) {
+    public Map<String, Object> loadBalancerEndpoint(@RequestBody Map<String, Object> requestBody) {
         LOG.info("Request with body: " + requestBody);
         return svc.processRequest(requestBody);
     }

@@ -23,6 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 public class E2ELoadBalancerIT {
 
     private static final String PATH = "/api/roundrobin";
+    private static final String REQ_BODY = "{\"key\": \"value\"}";
+    private static final String SERVER_ONE_PORT_PROPS = "server.port=8080";
+    private static final String SERVER_TWO_PORT_PROPS = "server.port=8081";
 
     @Autowired
     private MockMvc mockMvc;
@@ -31,20 +34,18 @@ public class E2ELoadBalancerIT {
     public void testRoundRobinEndpoint_AllServersHealthy() throws Exception {
         final ConfigurableApplicationContext server1 = new SpringApplicationBuilder()
                 .sources(EchoAPIApplication.class)
-                .properties("server.port=8080")
+                .properties(SERVER_ONE_PORT_PROPS)
                 .run();
         final ConfigurableApplicationContext server2 = new SpringApplicationBuilder()
                 .sources(EchoAPIApplication.class)
-                .properties("server.port=8081")
+                .properties(SERVER_TWO_PORT_PROPS)
                 .run();
-
-        final String requestBody = "{\"key\": \"value\"}";
 
         mockMvc.perform(MockMvcRequestBuilders.post(PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+                        .content(REQ_BODY))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().json(requestBody));
+                .andExpect(MockMvcResultMatchers.content().json(REQ_BODY));
 
         server1.close();
         server2.close();
@@ -52,12 +53,26 @@ public class E2ELoadBalancerIT {
 
     @Test
     public void testRoundRobinEndpoint_AllServersFail() throws Exception {
-        final String requestBody = "{\"key\": \"value\"}";
+        mockMvc.perform(MockMvcRequestBuilders.post(PATH)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(REQ_BODY))
+                .andExpect(MockMvcResultMatchers.status().isServiceUnavailable())
+                .andExpect(res -> assertInstanceOf(ResponseStatusException.class, res.getResolvedException()));
+    }
+
+    @Test
+    public void testRoundRobinEndpoint_OneServerFail() throws Exception {
+        final ConfigurableApplicationContext server2 = new SpringApplicationBuilder()
+                .sources(EchoAPIApplication.class)
+                .properties(SERVER_TWO_PORT_PROPS)
+                .run();
 
         mockMvc.perform(MockMvcRequestBuilders.post(PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(MockMvcResultMatchers.status().isServiceUnavailable())
-                .andExpect(res -> assertInstanceOf(ResponseStatusException.class, res.getResolvedException()));
+                        .content(REQ_BODY))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().json(REQ_BODY));
+
+        server2.close();
     }
 }

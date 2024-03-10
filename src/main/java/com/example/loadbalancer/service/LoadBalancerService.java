@@ -5,9 +5,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
@@ -21,10 +20,10 @@ public class LoadBalancerService {
     @Autowired
     private EndpointService endpointSvc;
 
-    private final WebClient webClient;
+    private final RestClient restClient;
 
-    public LoadBalancerService(final WebClient webClient) {
-        this.webClient = webClient;
+    public LoadBalancerService(final RestClient restClient) {
+        this.restClient = restClient;
     }
 
     public Map<String, Object> processRequest(final Map<String, Object> requestBody) {
@@ -32,12 +31,12 @@ public class LoadBalancerService {
             final String endpoint = endpointSvc.getNextEndpoint();
             try {
                 return processRequest(endpoint, requestBody);
-            } catch (final WebClientResponseException | WebClientRequestException webEx) {
+            } catch (final RestClientException restEx) {
                 // retry this request with another server
                 LOG.log(
                         Level.WARNING,
                         "Server:%s failed to process, retrying this request...".formatted(endpoint),
-                        webEx
+                        restEx
                 );
             } catch (final Exception e) {
                 LOG.severe("Server:%s unrecoverable exception while processing requestBody:%s"
@@ -50,13 +49,12 @@ public class LoadBalancerService {
 
     private Map<String, Object> processRequest(final String endpoint, final Map<String, Object> requestBody) {
         LOG.info("Server:%s processing request with body %s".formatted(endpoint, requestBody));
-        return webClient.post()
+        return restClient.post()
                 .uri(endpoint)
                 .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(requestBody)
+                .body(requestBody)
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
-                })
-                .block();
+                .body(new ParameterizedTypeReference<>() {
+                });
     }
 }

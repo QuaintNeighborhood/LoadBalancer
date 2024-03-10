@@ -10,12 +10,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
-import reactor.netty.http.client.HttpClient;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -28,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@SpringBootTest
 class LoadBalancerServiceTest {
     private static final Map<String, Object> REQ_BODY = new HashMap<>();
     private static final MockResponse SUCCESS_RES = new MockResponse().newBuilder()
@@ -38,10 +36,6 @@ class LoadBalancerServiceTest {
     private static final MockResponse ERR_RES = new MockResponse().newBuilder()
             .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
             .build();
-    private static final WebClient webClient = WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
-                    .responseTimeout(Duration.ofSeconds(1))))
-            .build();
 
     private static MockWebServer mockBackEnd1;
     private static MockWebServer mockBackEnd2;
@@ -50,7 +44,17 @@ class LoadBalancerServiceTest {
     private EndpointService endpointService;
 
     @InjectMocks
-    private LoadBalancerService lbSvc = new LoadBalancerService(webClient);
+    private LoadBalancerService lbSvc = new LoadBalancerService(
+            RestClient.builder()
+                    .requestFactory(clientHttpRequestFactory())
+                    .build()
+    );
+
+    private static ClientHttpRequestFactory clientHttpRequestFactory() {
+        final JdkClientHttpRequestFactory clientHttpRequestFactory = new JdkClientHttpRequestFactory();
+        clientHttpRequestFactory.setReadTimeout(Duration.ofSeconds(1));
+        return clientHttpRequestFactory;
+    }
 
     @BeforeAll
     static void beforeAll() {

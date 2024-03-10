@@ -31,6 +31,28 @@ public class E2ELoadBalancerIT {
     private MockMvc mockMvc;
 
     @Test
+    public void testRoundRobinEndpoint_BadRequest_InvalidJSON() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post(PATH)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"key\": }"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    public void testRoundRobinEndpoint_UnsupportedMediaType() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post(PATH))
+                .andExpect(MockMvcResultMatchers.status().isUnsupportedMediaType());
+
+        mockMvc.perform(MockMvcRequestBuilders.post(PATH)
+                        .contentType(MediaType.APPLICATION_XML))
+                .andExpect(MockMvcResultMatchers.status().isUnsupportedMediaType());
+
+        mockMvc.perform(MockMvcRequestBuilders.post(PATH)
+                        .content(""))
+                .andExpect(MockMvcResultMatchers.status().isUnsupportedMediaType());
+    }
+
+    @Test
     public void testRoundRobinEndpoint_AllServersHealthy() throws Exception {
         final ConfigurableApplicationContext server1 = new SpringApplicationBuilder()
                 .sources(EchoAPIApplication.class)

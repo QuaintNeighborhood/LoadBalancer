@@ -16,7 +16,7 @@ class EchoAPIApplicationTests {
 	@Autowired
 	private MockMvc mockMvc;
 
-	private static final String PATH = "/api/echo";
+	private static final String PATH = "/api/v1/echo";
 
 	@Test
 	public void testEchoEndpoint_Success() throws Exception {

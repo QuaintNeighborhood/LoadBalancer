@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 @TestPropertySource(locations = "classpath:application-integrationtest.properties")
 public class E2ELoadBalancerIT {
 
-    private static final String PATH = "/api/loadbalancer";
+    private static final String PATH = "/api/v1/loadbalancer";
     private static final String REQ_BODY = "{\"key\": \"value\"}";
     private static final String SERVER_ONE_PORT_PROPS = "server.port=8080";
     private static final String SERVER_TWO_PORT_PROPS = "server.port=8081";

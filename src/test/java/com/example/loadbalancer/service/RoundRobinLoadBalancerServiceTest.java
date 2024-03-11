@@ -6,14 +6,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@SpringBootTest
 class RoundRobinLoadBalancerServiceTest {
     private static final Map<String, Object> REQ_BODY = new HashMap<>();
     private static final MockResponse SUCCESS_RES = new MockResponse().newBuilder()
@@ -35,13 +35,10 @@ class RoundRobinLoadBalancerServiceTest {
     private static MockWebServer mockBackEnd1;
     private static MockWebServer mockBackEnd2;
 
-    private LoadBalancerService lbSvc;
+    @Autowired
+    private RestClient restClient;
 
-    private static ClientHttpRequestFactory clientHttpRequestFactory() {
-        final JdkClientHttpRequestFactory clientHttpRequestFactory = new JdkClientHttpRequestFactory();
-        clientHttpRequestFactory.setReadTimeout(Duration.ofSeconds(1));
-        return clientHttpRequestFactory;
-    }
+    private LoadBalancerService lbSvc;
 
     @BeforeAll
     static void beforeAll() {
@@ -59,9 +56,7 @@ class RoundRobinLoadBalancerServiceTest {
         final String mockURI2 = "http://localhost:%s".formatted(mockBackEnd2.getPort());
 
         lbSvc = new RoundRobinLoadBalancerService(
-                RestClient.builder()
-                        .requestFactory(clientHttpRequestFactory())
-                        .build(),
+                restClient,
                 List.of(mockURI1, mockURI2)
         );
     }

@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 @SpringBootTest(classes = LoadBalancerApplication.class)
 @AutoConfigureMockMvc
-@TestPropertySource(locations = "classpath:application-integrationtest.properties")
+@TestPropertySource("classpath:application-integrationtest.properties")
 public class E2ELoadBalancerIT {
 
     private static final String PATH = "/api/v1/loadbalancer";

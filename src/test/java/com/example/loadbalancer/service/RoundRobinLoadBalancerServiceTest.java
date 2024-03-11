@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class LoadBalancerServiceTest {
+class RoundRobinLoadBalancerServiceTest {
     private static final Map<String, Object> REQ_BODY = new HashMap<>();
     private static final MockResponse SUCCESS_RES = new MockResponse().newBuilder()
             .body("{\"key\": \"value\"}")
@@ -44,7 +44,7 @@ class LoadBalancerServiceTest {
     private BackendServerManager backendServerManager;
 
     @InjectMocks
-    private LoadBalancerService lbSvc = new LoadBalancerService(
+    private LoadBalancerService lbSvc = new RoundRobinLoadBalancerService(
             RestClient.builder()
                     .requestFactory(clientHttpRequestFactory())
                     .build()

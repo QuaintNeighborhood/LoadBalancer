@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-abstract class LoadBalancerServiceBase {
+abstract class LoadBalancerServiceBase implements LoadBalancerService {
     private static final Logger LOG = Logger.getLogger(LoadBalancerServiceBase.class.getName());
 
     private final RestClient restClient;

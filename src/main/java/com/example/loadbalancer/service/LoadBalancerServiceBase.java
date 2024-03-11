@@ -16,7 +16,6 @@ abstract class LoadBalancerServiceBase {
         this.restClient = restClient;
     }
 
-
     protected Map<String, Object> processRequest(final String uri, final Map<String, Object> requestBody) {
         LOG.info("Server:%s processing request with body %s".formatted(uri, requestBody));
         return restClient.post()

@@ -1,4 +1,4 @@
-package com.example.echoapi.controller;
+package com.example.echo.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;

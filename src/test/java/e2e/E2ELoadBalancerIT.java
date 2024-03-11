@@ -1,6 +1,6 @@
 package e2e;
 
-import com.example.echoapi.EchoAPIApplication;
+import com.example.echo.EchoApplication;
 import com.example.loadbalancer.LoadBalancerApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,11 +55,11 @@ public class E2ELoadBalancerIT {
     @Test
     public void testRoundRobinEndpoint_AllServersHealthy() throws Exception {
         final ConfigurableApplicationContext server1 = new SpringApplicationBuilder()
-                .sources(EchoAPIApplication.class)
+                .sources(EchoApplication.class)
                 .properties(SERVER_ONE_PORT_PROPS)
                 .run();
         final ConfigurableApplicationContext server2 = new SpringApplicationBuilder()
-                .sources(EchoAPIApplication.class)
+                .sources(EchoApplication.class)
                 .properties(SERVER_TWO_PORT_PROPS)
                 .run();
 
@@ -85,7 +85,7 @@ public class E2ELoadBalancerIT {
     @Test
     public void testRoundRobinEndpoint_OneServerFail() throws Exception {
         final ConfigurableApplicationContext server2 = new SpringApplicationBuilder()
-                .sources(EchoAPIApplication.class)
+                .sources(EchoApplication.class)
                 .properties(SERVER_TWO_PORT_PROPS)
                 .run();
 

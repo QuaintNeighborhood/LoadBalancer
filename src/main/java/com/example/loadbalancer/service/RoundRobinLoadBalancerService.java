@@ -39,10 +39,6 @@ public class RoundRobinLoadBalancerService extends LoadBalancerServiceBase imple
                         "Server:%s failed to process, retrying this request...".formatted(uri),
                         restEx
                 );
-            } catch (final Exception e) {
-                LOG.severe("Server:%s unrecoverable exception while processing requestBody:%s"
-                        .formatted(uri, requestBody));
-                throw e;
             }
         }
         throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "All servers failed to respond");

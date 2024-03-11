@@ -6,10 +6,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
@@ -19,14 +15,13 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class RoundRobinLoadBalancerServiceTest {
     private static final Map<String, Object> REQ_BODY = new HashMap<>();
     private static final MockResponse SUCCESS_RES = new MockResponse().newBuilder()
@@ -40,15 +35,7 @@ class RoundRobinLoadBalancerServiceTest {
     private static MockWebServer mockBackEnd1;
     private static MockWebServer mockBackEnd2;
 
-    @Mock
-    private BackendServerManager backendServerManager;
-
-    @InjectMocks
-    private LoadBalancerService lbSvc = new RoundRobinLoadBalancerService(
-            RestClient.builder()
-                    .requestFactory(clientHttpRequestFactory())
-                    .build()
-    );
+    private LoadBalancerService lbSvc;
 
     private static ClientHttpRequestFactory clientHttpRequestFactory() {
         final JdkClientHttpRequestFactory clientHttpRequestFactory = new JdkClientHttpRequestFactory();
@@ -68,10 +55,15 @@ class RoundRobinLoadBalancerServiceTest {
         mockBackEnd2 = new MockWebServer();
         mockBackEnd2.start();
 
-        when(backendServerManager.getNumURIs()).thenReturn(2);
         final String mockURI1 = "http://localhost:%s".formatted(mockBackEnd1.getPort());
         final String mockURI2 = "http://localhost:%s".formatted(mockBackEnd2.getPort());
-        when(backendServerManager.getNextURI()).thenReturn(mockURI1, mockURI2);
+
+        lbSvc = new RoundRobinLoadBalancerService(
+                RestClient.builder()
+                        .requestFactory(clientHttpRequestFactory())
+                        .build(),
+                List.of(mockURI1, mockURI2)
+        );
     }
 
     @AfterEach

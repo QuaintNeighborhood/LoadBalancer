@@ -4,6 +4,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -11,12 +12,14 @@ abstract class LoadBalancerServiceBase {
     private static final Logger LOG = Logger.getLogger(LoadBalancerServiceBase.class.getName());
 
     private final RestClient restClient;
+    final List<String> uris;
 
-    public LoadBalancerServiceBase(final RestClient restClient) {
+    public LoadBalancerServiceBase(final RestClient restClient, final List<String> uris) {
         this.restClient = restClient;
+        this.uris = uris;
     }
 
-    protected Map<String, Object> processRequest(final String uri, final Map<String, Object> requestBody) {
+    Map<String, Object> processRequest(final String uri, final Map<String, Object> requestBody) {
         LOG.info("Server:%s processing request with body %s".formatted(uri, requestBody));
         return restClient.post()
                 .uri(uri)
@@ -25,5 +28,9 @@ abstract class LoadBalancerServiceBase {
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {
                 });
+    }
+
+    int getNumURIs() {
+        return uris.size();
     }
 }

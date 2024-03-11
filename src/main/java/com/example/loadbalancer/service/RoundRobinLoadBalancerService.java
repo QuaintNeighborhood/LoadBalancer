@@ -1,9 +1,7 @@
 package com.example.loadbalancer.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -14,14 +12,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service("roundRobin")
-public class RoundRobinLoadBalancerService implements LoadBalancerService {
+public class RoundRobinLoadBalancerService extends LoadBalancerServiceBase implements LoadBalancerService {
     private static final Logger LOG = Logger.getLogger(RoundRobinLoadBalancerService.class.getName());
-    private final RestClient restClient;
+
     @Autowired
     private BackendServerManager backendServerManager;
 
-    public RoundRobinLoadBalancerService(final RestClient restClient) {
-        this.restClient = restClient;
+    public RoundRobinLoadBalancerService(@Autowired final RestClient restClient) {
+        super(restClient);
     }
 
     public Map<String, Object> processRequest(final Map<String, Object> requestBody) {
@@ -43,16 +41,5 @@ public class RoundRobinLoadBalancerService implements LoadBalancerService {
             }
         }
         throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "All servers failed to respond");
-    }
-
-    private Map<String, Object> processRequest(final String uri, final Map<String, Object> requestBody) {
-        LOG.info("Server:%s processing request with body %s".formatted(uri, requestBody));
-        return restClient.post()
-                .uri(uri)
-                .accept(MediaType.APPLICATION_JSON)
-                .body(requestBody)
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {
-                });
     }
 }

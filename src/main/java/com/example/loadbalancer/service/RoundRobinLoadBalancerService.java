@@ -14,6 +14,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Round Robin Load Balancer Service implementation.
+ */
 @Service
 public class RoundRobinLoadBalancerService extends LoadBalancerServiceBase {
     private static final Logger LOG = Logger.getLogger(RoundRobinLoadBalancerService.class.getName());
@@ -27,8 +30,18 @@ public class RoundRobinLoadBalancerService extends LoadBalancerServiceBase {
         super(restClient, uris);
     }
 
+    /**
+     * Sends a request to the next server in a round-robin manner. If a recoverable exception
+     * is thrown, the request is retried with the next server. If all servers fail, a ResponseStatusException
+     * with 503 HTTP status code is thrown.
+     *
+     * @param requestBody request body of incoming request
+     * @return response body
+     * @throws ResponseStatusException if all servers fail to respond
+     */
     public Map<String, Object> processRequest(final Map<String, Object> requestBody) {
-        for (int numFailedServers = 0; numFailedServers < getNumURIs(); numFailedServers++) {
+        final int numURIs = getNumURIs();
+        for (int numFailedServers = 0; numFailedServers < numURIs; numFailedServers++) {
             final String uri = getNextURI();
             try {
                 return processRequest(uri, requestBody);

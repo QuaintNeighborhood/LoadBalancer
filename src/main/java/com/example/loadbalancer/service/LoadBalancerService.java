@@ -5,7 +5,7 @@ import java.util.Map;
 /**
  * Load balancer service which processes incoming requests
  */
-interface LoadBalancerService {
+public interface LoadBalancerService {
 
     /**
      * Processes incoming request for the load balancer

@@ -41,7 +41,7 @@ class LoadBalancerServiceTest {
     private static MockWebServer mockBackEnd2;
 
     @Mock
-    private EndpointService endpointService;
+    private BackendServerManager backendServerManager;
 
     @InjectMocks
     private LoadBalancerService lbSvc = new LoadBalancerService(
@@ -68,10 +68,10 @@ class LoadBalancerServiceTest {
         mockBackEnd2 = new MockWebServer();
         mockBackEnd2.start();
 
-        when(endpointService.getNumEndpoints()).thenReturn(2);
-        final String mockEndpoint1 = "http://localhost:%s".formatted(mockBackEnd1.getPort());
-        final String mockEndpoint2 = "http://localhost:%s".formatted(mockBackEnd2.getPort());
-        when(endpointService.getNextEndpoint()).thenReturn(mockEndpoint1, mockEndpoint2);
+        when(backendServerManager.getNumURIs()).thenReturn(2);
+        final String mockURI1 = "http://localhost:%s".formatted(mockBackEnd1.getPort());
+        final String mockURI2 = "http://localhost:%s".formatted(mockBackEnd2.getPort());
+        when(backendServerManager.getNextURI()).thenReturn(mockURI1, mockURI2);
     }
 
     @AfterEach

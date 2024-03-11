@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Service("roundRobin")
+@Service
 public class RoundRobinLoadBalancerService extends LoadBalancerServiceBase implements LoadBalancerService {
     private static final Logger LOG = Logger.getLogger(RoundRobinLoadBalancerService.class.getName());
 

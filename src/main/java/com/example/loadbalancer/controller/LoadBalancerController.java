@@ -2,7 +2,6 @@ package com.example.loadbalancer.controller;
 
 import com.example.loadbalancer.service.LoadBalancerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +19,6 @@ public class LoadBalancerController {
     private static final Logger LOG = Logger.getLogger(LoadBalancerController.class.getName());
 
     @Autowired
-    @Qualifier("roundRobin")
     private LoadBalancerService svc;
 
     @PostMapping(
